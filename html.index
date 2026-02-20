@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PromptKit — Free AI Prompt Tools</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#f8f9fb;--bg2:#fff;--bg3:#f1f3f5;--bg4:#e5e7eb;--t1:#111827;--t2:#374151;--t3:#6b7280;--t4:#9ca3af;--bdr:#dde1e6;--bdr2:#e8ecf0;--acc:#2563eb;--acc2:#1d4ed8;--accbg:#eff6ff;--accbdr:#bfdbfe;--green:#16a34a;--greenbg:#f0fdf4;--yellow:#ca8a04;--red:#dc2626;--radius:10px;--mono:'IBM Plex Mono',monospace;--sans:'Inter',sans-serif}
+body{font-family:var(--sans);background:var(--bg);color:var(--t1);font-size:14px;line-height:1.5}
+::selection{background:var(--accbg);color:var(--acc)}
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:236px;background:var(--bg2);border-right:1px solid var(--bdr2);position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:50;display:flex;flex-direction:column}
+.main{flex:1;margin-left:236px;padding:28px 44px 80px;max-width:940px}
+.sb-top{padding:20px 16px 16px;border-bottom:1px solid var(--bdr2)}
+.sb-logo{display:flex;align-items:center;gap:10px}
+.sb-logo .mark{width:32px;height:32px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:700;color:#fff}
+.sb-logo .name{font-family:var(--mono);font-size:16px;font-weight:700}.sb-logo .name small{color:var(--t4);font-weight:400;font-size:10px}
+.sb-tag{font-size:11px;color:var(--t4);margin-top:6px}
+.sb-nav{flex:1;padding:8px 0;overflow-y:auto}
+.sb-section{padding:14px 16px 6px;font-size:10px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:1.5px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;color:var(--t3);font-size:13px;font-weight:500;transition:all .12s;border-left:3px solid transparent;text-decoration:none}
+.sb-item:hover{background:var(--bg3);color:var(--t1)}
+.sb-item.active{background:var(--accbg);color:var(--acc);border-left-color:var(--acc);font-weight:600}
+.sb-item .ico{width:20px;text-align:center;font-size:15px;flex-shrink:0}
+.sb-footer{padding:12px 16px;border-top:1px solid var(--bdr2);font-size:10px;color:var(--t4);text-align:center}
+.tool{display:none}.tool.active{display:block}
+.tool-header{margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--bdr2)}
+.tool-header h1{font-size:24px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.tool-header h1 .ti{font-size:22px}
+.tool-header p{color:var(--t3);font-size:14px}
+.tool-header .kb{display:inline-block;font-family:var(--mono);font-size:10px;color:var(--t4);background:var(--bg3);border:1px solid var(--bdr);padding:2px 6px;border-radius:4px;margin-top:8px}
+.fs{margin-bottom:24px}
+.fst{font-size:11px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.fst::after{content:'';flex:1;height:1px;background:var(--bdr2)}
+label{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--t2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+label .tip{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:var(--bg4);color:var(--t4);font-size:9px;font-weight:700;cursor:help;position:relative;text-transform:none;letter-spacing:0}
+label .tip:hover::after{content:attr(data-tip);position:absolute;left:20px;top:-4px;background:var(--t1);color:#fff;font-size:11px;font-weight:400;padding:6px 10px;border-radius:6px;white-space:normal;z-index:10;width:220px;line-height:1.4}
+select,input[type="text"],input[type="number"],textarea{width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:var(--radius);font-family:var(--sans);font-size:13px;color:var(--t1);background:var(--bg2);transition:all .15s;outline:none}
+select:focus,input:focus,textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+input::placeholder,textarea::placeholder{color:var(--t4)}
+textarea{resize:vertical;min-height:80px;font-family:var(--mono);font-size:12px;line-height:1.6}
+.field{margin-bottom:16px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.chip{padding:6px 14px;border:1px solid var(--bdr);border-radius:99px;font-size:12px;cursor:pointer;color:var(--t3);background:var(--bg2);transition:all .12s;user-select:none;font-weight:500}
+.chip:hover{border-color:var(--acc);color:var(--acc);background:var(--accbg)}
+.chip.on{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 22px;border:none;border-radius:var(--radius);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;transition:all .12s}
+.btn-primary{background:var(--acc);color:#fff;box-shadow:0 1px 3px rgba(37,99,235,.3)}.btn-primary:hover{background:var(--acc2)}
+.btn-secondary{background:var(--bg2);color:var(--t2);border:1px solid var(--bdr)}.btn-secondary:hover{background:var(--bg3)}
+.btn-sm{padding:5px 12px;font-size:11px}
+.btn-copy{background:var(--bg2);color:var(--t3);border:1px solid var(--bdr)}.btn-copy:hover{background:var(--greenbg);color:var(--green);border-color:#bbf7d0}
+.actions{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap}
+.output{margin-top:28px;background:var(--bg2);border:1px solid var(--bdr2);border-radius:12px;overflow:hidden}
+.output-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--bg3);border-bottom:1px solid var(--bdr2)}
+.output-bar span{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px}
+.output-body{padding:16px;font-family:var(--mono);font-size:12px;line-height:1.8;color:var(--t1);white-space:pre-wrap;word-break:break-word;min-height:60px}
+.output-body:empty::after{content:'Your output will appear here. Fill in the form above and click Generate.';color:var(--t4);font-family:var(--sans);font-style:italic;font-size:13px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--t1);color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:500;z-index:200;transition:transform .25s;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.colt{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--t3);cursor:pointer;padding:8px 0;margin-bottom:8px;user-select:none}
+.colt:hover{color:var(--acc)}.colt .ar{transition:transform .2s;font-size:10px}.colt.open .ar{transform:rotate(90deg)}
+.colb{display:none}.colb.open{display:block}
+hr{border:none;border-top:1px solid var(--bdr2);margin:24px 0}
+.score-bar{height:8px;background:var(--bg4);border-radius:99px;overflow:hidden;margin:8px 0}
+.score-fill{height:100%;border-radius:99px;transition:width .4s}
+.score-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.score-card{background:var(--bg2);border:1px solid var(--bdr2);border-radius:var(--radius);padding:14px}
+.score-card h4{font-size:10px;color:var(--t4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.score-card .val{font-family:var(--mono);font-size:22px;font-weight:700}
+.score-card .note{font-size:11px;color:var(--t3);margin-top:2px}
+.tmpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.tmpl-card{background:var(--bg2);border:1px solid var(--bdr2);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all .12s}
+.tmpl-card:hover{border-color:var(--acc);box-shadow:0 2px 12px rgba(37,99,235,.08);transform:translateY(-1px)}
+.tmpl-card h3{font-size:14px;font-weight:600;margin-bottom:4px}
+.tmpl-card p{font-size:12px;color:var(--t3);margin-bottom:8px}
+.tmpl-tag{display:inline-block;font-size:10px;padding:3px 8px;border-radius:5px;background:var(--bg3);color:var(--t3);font-weight:600}
+.tmpl-preview{display:none;margin-top:16px}.tmpl-preview.show{display:block}
+.tmpl-cats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.tips-list{margin-top:16px;list-style:none;padding:0}
+.tips-list li{padding:10px 14px;background:var(--accbg);border:1px solid var(--accbdr);border-radius:var(--radius);margin-bottom:6px;font-size:12px;color:var(--acc);line-height:1.5}
+@media(max-width:768px){
+.sidebar{position:fixed;left:-260px;transition:left .25s;z-index:100;box-shadow:4px 0 24px rgba(0,0,0,.12)}
+.sidebar.open{left:0}.main{margin-left:0;padding:20px 16px 60px;padding-top:64px}
+.mob-bar{display:flex !important}.row,.row3{grid-template-columns:1fr}}
+.mob-bar{display:none;position:fixed;top:0;left:0;right:0;height:52px;background:var(--bg2);border-bottom:1px solid var(--bdr2);z-index:90;align-items:center;padding:0 14px;gap:10px}
+.mob-bar .hamburger{width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;border:1px solid var(--bdr);border-radius:8px}
+.mob-bar span{font-family:var(--mono);font-size:14px;font-weight:700}
+.mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:99}.mob-overlay.show{display:block}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<div class="mob-bar"><div class="hamburger" onclick="toggleSB()">☰</div><span>PromptKit</span></div>
+<div class="mob-overlay" id="overlay" onclick="toggleSB()"></div>
+<div class="wrap">
+<aside class="sidebar" id="sidebar">
+<div class="sb-top"><div class="sb-logo"><div class="mark">PK</div><div class="name">PromptKit<small>.tools</small></div></div><div class="sb-tag">Free AI prompt toolkit</div></div>
+<div class="sb-nav">
+<div class="sb-section">Generate</div>
+<a class="sb-item active" data-tool="image" onclick="go('image')"><span class="ico">🎨</span> Image Builder</a>
+<a class="sb-item" data-tool="system" onclick="go('system')"><span class="ico">⚙️</span> System Prompt</a>
+<a class="sb-item" data-tool="persona" onclick="go('persona')"><span class="ico">🧑</span> Persona Builder</a>
+<a class="sb-item" data-tool="chain" onclick="go('chain')"><span class="ico">🔗</span> Prompt Chain</a>
+<div class="sb-section">Transform</div>
+<a class="sb-item" data-tool="translate" onclick="go('translate')"><span class="ico">🔄</span> Translator</a>
+<a class="sb-item" data-tool="expand" onclick="go('expand')"><span class="ico">✨</span> Expander</a>
+<a class="sb-item" data-tool="json" onclick="go('json')"><span class="ico">{}</span> JSON Format</a>
+<div class="sb-section">Library</div>
+<a class="sb-item" data-tool="templates" onclick="go('templates')"><span class="ico">📋</span> Templates</a>
+<div class="sb-section">Analyze</div>
+<a class="sb-item" data-tool="scorer" onclick="go('scorer')"><span class="ico">📊</span> Scorer</a>
+<a class="sb-item" data-tool="tokens" onclick="go('tokens')"><span class="ico">🔢</span> Token Counter</a>
+</div>
+<div class="sb-footer">Built by 0-HELLO Studios</div>
+</aside>
+<div class="main">
+
+<!-- IMAGE BUILDER -->
+<div class="tool active" id="tool-image">
+<div class="tool-header"><h1><span class="ti">🎨</span> Image Prompt Builder</h1><p>Pick options to build a detailed image prompt. Auto-formats for your chosen model.</p><span class="kb">Ctrl+Enter to generate</span></div>
+<div class="fs"><div class="fst">Basics</div>
+<div class="field"><label>Target Model <span class="tip" data-tip="Each model uses different syntax. We auto-format for you.">?</span></label><div class="chips" id="img-model"><div class="chip on" data-v="midjourney">Midjourney</div><div class="chip" data-v="dalle">DALL·E</div><div class="chip" data-v="sd">Stable Diffusion</div><div class="chip" data-v="flux">Flux</div></div></div>
+<div class="field"><label>Subject <span class="tip" data-tip="Be specific: 'a red fox on a mossy log' beats 'a fox'.">?</span></label><input type="text" id="img-subject" placeholder="a samurai standing in a neon-lit Tokyo alley at night"></div>
+</div>
+<div class="fs"><div class="fst">Appearance</div>
+<div class="row">
+<div class="field"><label>Style</label><select id="img-style"><option value="">— Select —</option><option>Photorealistic</option><option>Cinematic</option><option>Anime</option><option>Oil Painting</option><option>Watercolor</option><option>3D Render</option><option>Pixel Art</option><option>Comic Book</option><option>Pencil Sketch</option><option>Isometric</option><option>Low Poly</option><option>Cyberpunk</option><option>Fantasy Art</option><option>Minimalist</option><option>Pop Art</option><option>Vaporwave</option><option>Steampunk</option><option>Surrealism</option></select></div>
+<div class="field"><label>Mood</label><select id="img-mood"><option value="">— Select —</option><option>Dramatic</option><option>Ethereal</option><option>Dark & Moody</option><option>Vibrant</option><option>Nostalgic</option><option>Peaceful</option><option>Epic</option><option>Mysterious</option><option>Whimsical</option><option>Gritty</option><option>Dreamy</option><option>Eerie</option></select></div>
+</div>
+<div class="row3">
+<div class="field"><label>Lighting</label><select id="img-light"><option value="">— Select —</option><option>Golden Hour</option><option>Blue Hour</option><option>Neon Glow</option><option>Studio Lighting</option><option>Rim Lighting</option><option>Volumetric</option><option>Candlelight</option><option>Moonlight</option><option>Backlighting</option><option>Soft Diffused</option></select></div>
+<div class="field"><label>Camera</label><select id="img-camera"><option value="">— Select —</option><option>Close-up</option><option>Wide Angle</option><option>Bird's Eye</option><option>Low Angle</option><option>Dutch Angle</option><option>Macro</option><option>85mm Portrait</option><option>35mm</option><option>Telephoto</option></select></div>
+<div class="field"><label>Aspect Ratio</label><select id="img-ar"><option value="">Default</option><option value="1:1">1:1 Square</option><option value="16:9">16:9 Wide</option><option value="9:16">9:16 Tall</option><option value="4:3">4:3</option><option value="3:2">3:2</option></select></div>
+</div></div>
+<div class="colt" onclick="toggleCol(this)"><span class="ar">▶</span> Advanced options</div>
+<div class="colb">
+<div class="field"><label>Extra Details <span class="tip" data-tip="Quality boosters like '8k, intricate details, trending on artstation'.">?</span></label><input type="text" id="img-extra" placeholder="intricate details, 8k, trending on artstation"></div>
+<div class="field"><label>Negative Prompt <span class="tip" data-tip="What to avoid. Common: blurry, low quality, text, watermark.">?</span></label><input type="text" id="img-neg" placeholder="blurry, low quality, text, watermark, deformed hands"></div>
+</div>
+<div class="actions"><button class="btn btn-primary" onclick="buildImagePrompt()">⚡ Generate</button><button class="btn btn-secondary" onclick="randomizeImage()">🎲 Randomize</button></div>
+<div class="output"><div class="output-bar"><span>Generated Prompt</span><button class="btn btn-copy btn-sm" onclick="copyFrom('img-out',this)">📋 Copy</button></div><div class="output-body" id="img-out"></div></div>
+</div>
+
+<!-- SYSTEM PROMPT -->
+<div class="tool" id="tool-system">
+<div class="tool-header"><h1><span class="ti">⚙️</span> System Prompt Generator</h1><p>Define a role, task, and rules — get a structured system prompt ready to paste into any AI.</p><span class="kb">Ctrl+Enter to generate</span></div>
+<div class="fs"><div class="fst">Core Identity</div>
+<div class="field"><label>Role <span class="tip" data-tip="Who is the AI? Give expertise and background.">?</span></label><input type="text" id="sys-role" placeholder="Senior marketing strategist with 15 years at Fortune 500 companies"></div>
+<div class="field"><label>Primary Task</label><input type="text" id="sys-task" placeholder="Help users write high-converting email campaigns for SaaS products"></div>
+</div>
+<div class="fs"><div class="fst">Behavior</div>
+<div class="row">
+<div class="field"><label>Tone</label><select id="sys-tone"><option>Professional</option><option>Casual</option><option>Friendly</option><option>Academic</option><option>Humorous</option><option>Direct</option><option>Empathetic</option><option>Authoritative</option></select></div>
+<div class="field"><label>Response Format</label><select id="sys-format"><option>Paragraphs</option><option>Bullet Points</option><option>Step by Step</option><option>Table</option><option>JSON</option><option>Markdown</option></select></div>
+</div></div>
+<div class="colt" onclick="toggleCol(this)"><span class="ar">▶</span> Advanced options</div>
+<div class="colb">
+<div class="field"><label>Knowledge / Context</label><textarea id="sys-context" rows="3" placeholder="Domain knowledge, company info, or background the AI should have..."></textarea></div>
+<div class="field"><label>Constraints (do NOT)</label><textarea id="sys-donts" rows="2" placeholder="Don't give medical/legal advice, don't make up statistics..."></textarea></div>
+<div class="field"><label>Example Interaction</label><textarea id="sys-example" rows="3" placeholder="User: How do I improve open rates?\nAssistant: Here are 3 proven strategies..."></textarea></div>
+</div>
+<div class="actions"><button class="btn btn-primary" onclick="buildSystemPrompt()">⚡ Generate</button></div>
+<div class="output"><div class="output-bar"><span>System Prompt</span><button class="btn btn-copy btn-sm" onclick="copyFrom('sys-out',this)">📋 Copy</button></div><div class="output-body" id="sys-out"></div></div>
+</div>
+<!-- PERSONA BUILDER -->
+<div class="tool" id="tool-persona">
+<div class="tool-header"><h1><span class="ti">🧑</span> Persona Builder</h1><p>Create a detailed AI persona for chatbots, assistants, or roleplay. Export as system prompt, card, or JSON.</p></div>
+<div class="fs"><div class="fst">Identity</div>
+<div class="row">
+<div class="field"><label>Name</label><input type="text" id="per-name" placeholder="Luna"></div>
+<div class="field"><label>Role / Title</label><input type="text" id="per-role" placeholder="Lead UX Researcher at a design agency"></div>
+</div>
+<div class="row">
+<div class="field"><label>Personality Traits</label><input type="text" id="per-traits" placeholder="curious, analytical, witty, patient"></div>
+<div class="field"><label>Communication Style</label><select id="per-style"><option>Professional & Concise</option><option>Warm & Conversational</option><option>Academic & Thorough</option><option>Casual & Friendly</option><option>Witty & Sharp</option><option>Empathetic & Supportive</option><option>Bold & Provocative</option></select></div>
+</div></div>
+<div class="fs"><div class="fst">Depth</div>
+<div class="field"><label>Expertise</label><textarea id="per-expertise" rows="2" placeholder="User research, usability testing, design systems, accessibility, Figma..."></textarea></div>
+<div class="field"><label>Backstory</label><textarea id="per-backstory" rows="2" placeholder="10 years in UX, previously at Google and Spotify, conference speaker..."></textarea></div>
+</div>
+<div class="colt" onclick="toggleCol(this)"><span class="ar">▶</span> Personality details</div>
+<div class="colb">
+<div class="field"><label>Quirks</label><input type="text" id="per-quirks" placeholder="uses analogies, ends with action items, loves post-its"></div>
+<div class="field"><label>Limitations</label><input type="text" id="per-limits" placeholder="won't give legal advice, won't speculate on competitors"></div>
+<div class="field"><label>Example Phrases</label><textarea id="per-phrases" rows="2" placeholder='"Let me challenge that assumption..." / "What does the data say?"'></textarea></div>
+</div>
+<div class="field" style="margin-top:12px"><label>Output Format</label><div class="chips" id="per-fmt"><div class="chip on" data-v="system">System Prompt</div><div class="chip" data-v="card">Character Card</div><div class="chip" data-v="json">JSON</div></div></div>
+<div class="actions"><button class="btn btn-primary" onclick="buildPersona()">🧑 Build Persona</button></div>
+<div class="output"><div class="output-bar"><span>Persona</span><button class="btn btn-copy btn-sm" onclick="copyFrom('per-out',this)">📋 Copy</button></div><div class="output-body" id="per-out"></div></div>
+</div>
+
+<!-- CHAIN BUILDER -->
+<div class="tool" id="tool-chain">
+<div class="tool-header"><h1><span class="ti">🔗</span> Prompt Chain Builder</h1><p>Create multi-step prompt workflows. Reference previous outputs with <code style="background:var(--bg3);padding:2px 6px;border-radius:4px;font-size:12px">{{variables}}</code>.</p></div>
+<div id="chain-steps">
+<div class="chain-step" data-idx="0">
+<div class="fst">Step 1</div>
+<div class="field"><label>Instruction</label><textarea class="chain-instr" rows="2" placeholder="Research the top 5 competitors in the AI tutoring market with pricing and features."></textarea></div>
+<div class="row"><div class="field"><label>Output Type</label><select class="chain-out-type"><option>Text</option><option>List</option><option>JSON</option><option>Table</option><option>Code</option></select></div>
+<div class="field"><label>Variable Name <span class="tip" data-tip="Name this output to reference in later steps with {{name}}.">?</span></label><input type="text" class="chain-var" placeholder="{{research}}"></div></div>
+<hr style="margin:16px 0">
+</div></div>
+<div class="actions" style="margin-top:0"><button class="btn btn-secondary" onclick="addChainStep()">+ Add Step</button><button class="btn btn-secondary" onclick="removeChainStep()" id="chain-remove-btn" style="display:none">− Remove</button><button class="btn btn-primary" onclick="buildChain()">🔗 Generate Chain</button></div>
+<div class="output"><div class="output-bar"><span>Prompt Chain</span><button class="btn btn-copy btn-sm" onclick="copyFrom('chain-out',this)">📋 Copy</button></div><div class="output-body" id="chain-out"></div></div>
+</div>
+
+<!-- TRANSLATOR -->
+<div class="tool" id="tool-translate">
+<div class="tool-header"><h1><span class="ti">🔄</span> Prompt Translator</h1><p>Convert prompts between Midjourney, DALL·E, Stable Diffusion, and Flux. Handles syntax and parameter differences.</p></div>
+<div class="row">
+<div class="field"><label>From</label><select id="tr-from"><option value="midjourney">Midjourney</option><option value="dalle">DALL·E</option><option value="sd">Stable Diffusion</option><option value="flux">Flux</option><option value="plain">Plain Text</option></select></div>
+<div class="field"><label>To</label><select id="tr-to"><option value="dalle">DALL·E</option><option value="midjourney">Midjourney</option><option value="sd">Stable Diffusion</option><option value="flux">Flux</option></select></div>
+</div>
+<div class="field"><label>Source Prompt</label><textarea id="tr-input" rows="5" placeholder="Paste a Midjourney prompt like: a cyberpunk city at sunset, cinematic lighting --ar 16:9 --v 6.1"></textarea></div>
+<div class="actions"><button class="btn btn-primary" onclick="translatePrompt()">🔄 Translate</button></div>
+<div class="output"><div class="output-bar"><span>Translated Prompt</span><button class="btn btn-copy btn-sm" onclick="copyFrom('tr-out',this)">📋 Copy</button></div><div class="output-body" id="tr-out"></div></div>
+</div>
+
+<!-- EXPANDER -->
+<div class="tool" id="tool-expand">
+<div class="tool-header"><h1><span class="ti">✨</span> Prompt Expander</h1><p>Turn a short lazy prompt into a detailed, high-quality one. Great for quick ideas you want to flesh out.</p></div>
+<div class="field"><label>Prompt Type</label><div class="chips" id="exp-type"><div class="chip on" data-v="image">Image</div><div class="chip" data-v="text">Text / Chat</div><div class="chip" data-v="code">Code</div></div></div>
+<div class="field"><label>Your Short Prompt</label><textarea id="exp-input" rows="3" placeholder="draw a cool dragon"></textarea></div>
+<div class="row">
+<div class="field"><label>Detail Level</label><select id="exp-level"><option value="moderate">Moderate</option><option value="high">High Detail</option><option value="max">Maximum</option></select></div>
+<div class="field"><label>Target Model (image only)</label><select id="exp-model"><option value="any">Any / General</option><option value="midjourney">Midjourney</option><option value="dalle">DALL·E</option><option value="sd">Stable Diffusion</option></select></div>
+</div>
+<div class="actions"><button class="btn btn-primary" onclick="expandPrompt()">✨ Expand</button></div>
+<div class="output"><div class="output-bar"><span>Expanded Prompt</span><button class="btn btn-copy btn-sm" onclick="copyFrom('exp-out',this)">📋 Copy</button></div><div class="output-body" id="exp-out"></div></div>
+</div>
+<!-- JSON FORMATTER -->
+<div class="tool" id="tool-json">
+<div class="tool-header"><h1><span class="ti">{}</span> JSON Prompt Formatter</h1><p>Format prompts into API-ready JSON request bodies for OpenAI, Anthropic, or Google APIs.</p></div>
+<div class="field"><label>API Provider</label><div class="chips" id="json-api"><div class="chip on" data-v="openai">OpenAI</div><div class="chip" data-v="anthropic">Anthropic</div><div class="chip" data-v="google">Google</div></div></div>
+<div class="field"><label>System Prompt (optional)</label><textarea id="json-system" rows="2" placeholder="You are a helpful assistant that specializes in..."></textarea></div>
+<div class="field"><label>User Message</label><textarea id="json-user" rows="3" placeholder="Explain quantum computing in simple terms..."></textarea></div>
+<div class="row">
+<div class="field"><label>Model</label><select id="json-model"><option value="gpt-4o">gpt-4o</option><option value="gpt-4o-mini">gpt-4o-mini</option><option value="gpt-4.1">gpt-4.1</option><option value="o3-mini">o3-mini</option></select></div>
+<div class="field"><label>Max Tokens</label><input type="number" id="json-tokens" value="1024" min="1" max="128000"></div>
+</div>
+<div class="row">
+<div class="field"><label>Temperature</label><input type="number" id="json-temp" value="0.7" min="0" max="2" step="0.1"></div>
+<div class="field"><label>Options</label><div class="chips" id="json-opts"><div class="chip on" data-v="stream">Stream</div><div class="chip" data-v="topp">top_p</div></div></div>
+</div>
+<div class="actions"><button class="btn btn-primary" onclick="buildJSON()">{ } Format JSON</button></div>
+<div class="output"><div class="output-bar"><span>API Request Body</span><button class="btn btn-copy btn-sm" onclick="copyFrom('json-out',this)">📋 Copy</button></div><div class="output-body" id="json-out"></div></div>
+</div>
+
+<!-- TEMPLATES -->
+<div class="tool" id="tool-templates">
+<div class="tool-header"><h1><span class="ti">📋</span> Prompt Templates</h1><p>Ready-to-use prompts organized by use case. Click a template, customize the variables, and copy.</p></div>
+<div class="field"><input type="text" id="tmpl-search" placeholder="🔍 Search templates..." oninput="renderTemplates()"></div>
+<div class="tmpl-cats" id="tmpl-cats"></div>
+<div class="tmpl-grid" id="tmpl-grid"></div>
+<div class="tmpl-preview" id="tmpl-preview">
+<hr>
+<div class="output-bar" style="border-radius:8px 8px 0 0"><span id="tmpl-title"></span><button class="btn btn-copy btn-sm" onclick="copyFrom('tmpl-out',this)">📋 Copy</button></div>
+<div style="background:var(--bg2);border:1px solid var(--bdr2);border-top:0;border-radius:0 0 8px 8px;padding:16px">
+<div class="output-body" id="tmpl-out" style="min-height:40px"></div>
+<div id="tmpl-vars" style="margin-top:16px"></div>
+<button class="btn btn-primary" onclick="applyVars()" style="margin-top:10px">↻ Update Prompt</button>
+</div></div>
+</div>
+
+<!-- SCORER -->
+<div class="tool" id="tool-scorer">
+<div class="tool-header"><h1><span class="ti">📊</span> Prompt Scorer</h1><p>Paste any prompt and get scored on clarity, specificity, structure, and effectiveness — with suggestions to improve.</p><span class="kb">Ctrl+Enter to analyze</span></div>
+<div class="field"><label>Your Prompt</label><textarea id="score-input" rows="6" placeholder="Paste any prompt here to analyze its quality..."></textarea></div>
+<div class="actions"><button class="btn btn-primary" onclick="scorePrompt()">📊 Analyze</button></div>
+<div id="score-results" style="margin-top:24px"></div>
+</div>
+
+<!-- TOKEN COUNTER -->
+<div class="tool" id="tool-tokens">
+<div class="tool-header"><h1><span class="ti">🔢</span> Token Counter</h1><p>Estimate token count for GPT-4, Claude, and Gemini. See how much of each model's context window you're using.</p></div>
+<div class="field"><label>Your Text</label><textarea id="tok-input" rows="8" placeholder="Paste any text, prompt, or conversation here — counts update as you type..." oninput="countTokens()"></textarea></div>
+<div id="tok-results" style="margin-top:16px">
+<div class="score-grid">
+<div class="score-card"><h4>Characters</h4><div class="val" id="tok-chars">0</div></div>
+<div class="score-card"><h4>Words</h4><div class="val" id="tok-words">0</div></div>
+<div class="score-card"><h4>GPT-4 Tokens</h4><div class="val" id="tok-gpt">0</div><div class="note">~4 chars/token</div></div>
+<div class="score-card"><h4>Claude Tokens</h4><div class="val" id="tok-claude">0</div><div class="note">~3.5 chars/token</div></div>
+</div>
+<div style="margin-top:20px"><div class="fst">Context Window Usage</div><div id="tok-windows"></div></div>
+</div>
+</div>
+
+</div></div>
+<script>
+// ═══ CORE ═══
+function go(id){
+  document.querySelectorAll('.tool').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(s=>s.classList.remove('active'));
+  document.getElementById('tool-'+id).classList.add('active');
+  document.querySelector(`[data-tool="${id}"]`).classList.add('active');
+  window.scrollTo(0,0);
+  if(window.innerWidth<769)toggleSB();
+}
+function toggleSB(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show')}
+function toggleCol(el){el.classList.toggle('open');el.nextElementSibling.classList.toggle('open')}
+document.querySelectorAll('.chips').forEach(g=>{
+  const multi=g.id==='json-opts';
+  g.querySelectorAll('.chip').forEach(c=>{c.addEventListener('click',e=>{
+    if(multi){c.classList.toggle('on')}else{g.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));c.classList.add('on')}
+  })});
+});
+function gv(id){return document.getElementById(id).value.trim()}
+function getChip(id){return document.querySelector(`#${id} .chip.on`)?.dataset.v||''}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000)}
+function copyFrom(id,btn){
+  const t=document.getElementById(id).textContent;
+  if(!t){toast('Nothing to copy');return}
+  navigator.clipboard.writeText(t);
+  const orig=btn.innerHTML;btn.innerHTML='✓ Copied';btn.style.background='var(--green)';btn.style.color='#fff';btn.style.borderColor='var(--green)';
+  setTimeout(()=>{btn.innerHTML=orig;btn.style.background='';btn.style.color='';btn.style.borderColor=''},1500);
+  toast('Copied to clipboard');
+}
+function setSelect(id,val){const s=document.getElementById(id);for(let o of s.options)if(o.text===val){s.value=o.value;break}}
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();const active=document.querySelector('.tool.active');const btn=active?.querySelector('.btn-primary');if(btn)btn.click()}});
+
+// ═══ IMAGE BUILDER ═══
+function buildImagePrompt(){
+  const model=getChip('img-model'),subject=gv('img-subject');
+  if(!subject){document.getElementById('img-out').textContent='⚠️ Enter a subject first.';return}
+  const style=gv('img-style'),mood=gv('img-mood'),light=gv('img-light'),cam=gv('img-camera'),ar=gv('img-ar'),extra=gv('img-extra'),neg=gv('img-neg');
+  let p=[subject];
+  if(style)p.push(style.toLowerCase()+' style');if(mood)p.push(mood.toLowerCase()+' atmosphere');
+  if(light)p.push(light.toLowerCase()+' lighting');if(cam)p.push(cam.toLowerCase()+' shot');if(extra)p.push(extra);
+  let out=p.join(', ');
+  if(model==='midjourney'){if(ar)out+=` --ar ${ar}`;out+=' --v 6.1'}
+  else if(model==='sd'){out=out.charAt(0).toUpperCase()+out.slice(1);if(!extra||!extra.includes('quality'))out+=', masterpiece, best quality, highly detailed';if(neg)out+=`\n\nNegative prompt: ${neg}`}
+  else if(model==='dalle'){out='Create an image of '+out+'.';if(neg)out+=` Avoid: ${neg}.`}
+  else if(model==='flux'){if(ar)out+=` [${ar}]`}
+  if(model!=='sd'&&model!=='dalle'&&neg)out+=`\n\nNegative: ${neg}`;
+  document.getElementById('img-out').textContent=out;
+}
+const RS=["a lone astronaut on a coral reef planet","a cyberpunk street food vendor","an ancient library floating in clouds","a fox wearing Victorian clothing","a crystal cave with bioluminescent mushrooms","a mechanical whale in a steampunk harbor","a witch's cottage in autumn forest","a neon samurai in the rain","a giant robot overgrown with moss","a cat cafe on a space station","a dragon sleeping on gold coins in a cave","an underwater city with glass domes","a floating island with a lighthouse"];
+const RST=["Photorealistic","Cinematic","Anime","Oil Painting","Watercolor","3D Render","Pixel Art","Fantasy Art","Cyberpunk","Surrealism"];
+const RM=["Dramatic","Ethereal","Dark & Moody","Vibrant","Mysterious","Peaceful","Epic","Dreamy"];
+const RL=["Golden Hour","Neon Glow","Volumetric","Moonlight","Rim Lighting","Backlighting","Studio Lighting"];
+const RC=["Wide Angle","Close-up","Low Angle","Bird's Eye","85mm Portrait","Dutch Angle"];
+function randomizeImage(){const pk=a=>a[Math.floor(Math.random()*a.length)];document.getElementById('img-subject').value=pk(RS);setSelect('img-style',pk(RST));setSelect('img-mood',pk(RM));setSelect('img-light',pk(RL));setSelect('img-camera',pk(RC));buildImagePrompt()}
+
+// ═══ SYSTEM PROMPT ═══
+function buildSystemPrompt(){
+  const role=gv('sys-role'),task=gv('sys-task'),tone=gv('sys-tone'),fmt=gv('sys-format'),ctx=gv('sys-context'),donts=gv('sys-donts'),ex=gv('sys-example');
+  if(!role&&!task){document.getElementById('sys-out').textContent='⚠️ Fill in at least a role or task.';return}
+  let L=[];L.push('# System Prompt\n');
+  if(role){L.push('## Role');L.push(`You are ${role}.\n`)}
+  if(task){L.push('## Task');L.push(`${task}\n`)}
+  L.push('## Communication Style');L.push(`- Tone: ${tone}`);L.push(`- Format: ${fmt}\n`);
+  if(ctx){L.push('## Knowledge & Context');L.push(`${ctx}\n`)}
+  if(donts){L.push('## Constraints');donts.split(/[,\n]/).filter(s=>s.trim()).forEach(d=>L.push(`- DO NOT: ${d.trim()}`));L.push('')}
+  L.push('## Guidelines');L.push('- Be concise and actionable');L.push('- Ask clarifying questions when ambiguous');L.push('- Provide examples for complex concepts');L.push('- Acknowledge limitations honestly');
+  if(ex){L.push('\n## Example Interaction');L.push(ex)}
+  document.getElementById('sys-out').textContent=L.join('\n');
+}
+
+// ═══ PERSONA ═══
+function buildPersona(){
+  const name=gv('per-name')||'Assistant',role=gv('per-role'),traits=gv('per-traits'),style=gv('per-style'),expertise=gv('per-expertise'),backstory=gv('per-backstory'),quirks=gv('per-quirks'),limits=gv('per-limits'),phrases=gv('per-phrases'),fmt=getChip('per-fmt');
+  let out='';
+  if(fmt==='system'){
+    let L=[];L.push(`# ${name}${role?' — '+role:''}\n`);L.push(`You are ${name}${role?', a '+role:''}.`);
+    if(backstory)L.push(backstory);L.push('');
+    if(traits){L.push('## Personality');L.push(`Your core traits: ${traits}.\n`)}
+    L.push('## Communication Style');L.push(`Communicate in a ${style.toLowerCase()} manner.`);
+    if(phrases)L.push(`Example phrases: ${phrases}`);L.push('');
+    if(expertise){L.push('## Expertise');L.push(`Deep knowledge in: ${expertise}.\n`)}
+    if(quirks){L.push('## Quirks');L.push(quirks+'\n')}
+    if(limits){L.push('## Boundaries');limits.split(/[,\n]/).filter(s=>s.trim()).forEach(l=>L.push(`- DO NOT: ${l.trim()}`));L.push('')}
+    L.push('## Guidelines');L.push('- Stay in character at all times');L.push('- Be helpful while maintaining persona');L.push('- Acknowledge what is outside your expertise');
+    out=L.join('\n');
+  }else if(fmt==='card'){
+    let L=[];L.push(`╔══════════════════════════════════╗`);L.push(`║  PERSONA CARD                    ║`);L.push(`╠══════════════════════════════════╣`);
+    L.push(`║  Name: ${name.padEnd(25).slice(0,25)}║`);if(role)L.push(`║  Role: ${role.padEnd(25).slice(0,25)}║`);
+    L.push(`╠══════════════════════════════════╣`);
+    if(traits)L.push(`║  Traits: ${traits.slice(0,23).padEnd(23)}║`);if(style)L.push(`║  Style: ${style.slice(0,24).padEnd(24)}║`);
+    if(expertise)L.push(`║  Expert: ${expertise.slice(0,23).padEnd(23)}║`);
+    L.push(`╚══════════════════════════════════╝`);
+    if(backstory)L.push(`\nBackstory:\n${backstory}`);if(phrases)L.push(`\nPhrases:\n${phrases}`);
+    out=L.join('\n');
+  }else{
+    const obj={name,role:role||undefined,personality:{traits:traits?traits.split(',').map(s=>s.trim()):[],style},expertise:expertise?expertise.split(',').map(s=>s.trim()):[],backstory:backstory||undefined,quirks:quirks||undefined,limitations:limits?limits.split(',').map(s=>s.trim()):[],sample_phrases:phrases?phrases.split('/').map(s=>s.trim()):[]};
+    Object.keys(obj).forEach(k=>{if(!obj[k]||(Array.isArray(obj[k])&&!obj[k].length))delete obj[k]});
+    out=JSON.stringify(obj,null,2);
+  }
+  document.getElementById('per-out').textContent=out;
+}
+
+// ═══ CHAIN ═══
+let chainCount=1;
+function addChainStep(){chainCount++;const d=document.createElement('div');d.className='chain-step';d.innerHTML=`<div class="fst">Step ${chainCount}</div><div class="field"><label>Instruction</label><textarea class="chain-instr" rows="2" placeholder="Use {{variable}} from previous steps..."></textarea></div><div class="row"><div class="field"><label>Output Type</label><select class="chain-out-type"><option>Text</option><option>List</option><option>JSON</option><option>Table</option><option>Code</option></select></div><div class="field"><label>Variable Name</label><input type="text" class="chain-var" placeholder="{{analysis}}"></div></div><hr style="margin:16px 0">`;document.getElementById('chain-steps').appendChild(d);document.getElementById('chain-remove-btn').style.display='inline-flex'}
+function removeChainStep(){if(chainCount<=1)return;document.getElementById('chain-steps').lastElementChild.remove();chainCount--;if(chainCount<=1)document.getElementById('chain-remove-btn').style.display='none'}
+function buildChain(){const steps=document.querySelectorAll('.chain-step');let L=['# Prompt Chain Workflow',`# Total Steps: ${steps.length}\n`];steps.forEach((s,i)=>{const instr=s.querySelector('.chain-instr').value.trim()||'[Not specified]';const outType=s.querySelector('.chain-out-type').value;const varN=s.querySelector('.chain-var').value.trim();L.push(`## Step ${i+1}`);L.push(`**Instruction:** ${instr}`);L.push(`**Output:** ${outType}`);if(varN)L.push(`**Variable:** ${varN}`);if(i<steps.length-1)L.push(`**→ Feed to Step ${i+2}**`);L.push('')});L.push('---\n# Ready-to-Use Prompts\n');steps.forEach((s,i)=>{const instr=s.querySelector('.chain-instr').value.trim()||'[instruction]';const outType=s.querySelector('.chain-out-type').value;L.push(`### Step ${i+1}:`);L.push(`${instr}\n\nFormat your response as: ${outType}`);if(i<steps.length-1)L.push(`\n[Copy output → paste into Step ${i+2}]\n`);L.push('')});document.getElementById('chain-out').textContent=L.join('\n')}
+
+// ═══ TRANSLATOR ═══
+function translatePrompt(){
+  const from=gv('tr-from'),to=gv('tr-to'),input=gv('tr-input');
+  if(!input){document.getElementById('tr-out').textContent='⚠️ Paste a prompt first.';return}
+  let core=input.replace(/--ar\s+\S+/g,'').replace(/--v\s+\S+/g,'').replace(/--style\s+\S+/g,'').replace(/--q\s+\S+/g,'').replace(/--s\s+\S+/g,'').replace(/--chaos\s+\S+/g,'').replace(/--no\s+[^-]+/g,'').replace(/\[[\d:]+\]/g,'');
+  let neg='';const nm=core.match(/\n\s*Negative prompt:\s*(.*)/is);if(nm){neg=nm[1].trim();core=core.replace(nm[0],'')}
+  const nm2=core.match(/\n\s*Negative:\s*(.*)/is);if(nm2){neg=nm2[1].trim();core=core.replace(nm2[0],'')}
+  core=core.replace(/^Create an image of\s+/i,'').replace(/\.\s*Avoid:.*$/i,'').replace(/,?\s*(masterpiece|best quality|highly detailed|4k|8k|ultra detailed)/gi,'').trim().replace(/,\s*$/,'');
+  const am=input.match(/--ar\s+(\S+)/);const ar=am?am[1]:'';
+  const noM=input.match(/--no\s+([^-]+)/);if(noM&&!neg)neg=noM[1].trim();
+  let out='';
+  if(to==='midjourney'){out=core;if(ar)out+=` --ar ${ar}`;out+=' --v 6.1';if(neg)out+=` --no ${neg}`}
+  else if(to==='sd'){out=core.charAt(0).toUpperCase()+core.slice(1)+', masterpiece, best quality, highly detailed';out+=neg?`\n\nNegative prompt: ${neg}`:'\n\nNegative prompt: lowres, bad anatomy, bad hands, text, error, blurry, watermark'}
+  else if(to==='dalle'){out='Create an image of '+core+'.';if(neg)out+=` Avoid: ${neg}.`}
+  else if(to==='flux'){out=core;if(ar)out+=` [${ar}]`}
+  document.getElementById('tr-out').textContent=out;
+}
+
+// ═══ EXPANDER ═══
+const ES=["photorealistic","cinematic","digital art","oil painting","watercolor","3D render","anime","concept art"];
+const EM=["dramatic","ethereal","moody","vibrant","serene","mysterious","epic","dreamlike"];
+const EL=["golden hour lighting","volumetric lighting","rim lighting","neon glow","soft diffused light","dramatic chiaroscuro"];
+const ED=["intricate details","8k resolution","highly detailed","sharp focus","professional quality"];
+const EC=["wide angle shot","close-up","bird's eye view","low angle","85mm portrait lens"];
+const ETA=["Provide specific examples","Use clear headings","Include actionable takeaways","Consider edge cases","Address counterarguments"];
+const ECA=["Include error handling","Add inline comments","Follow best practices","Consider edge cases","Add type annotations","Include tests"];
+function expandPrompt(){
+  const type=getChip('exp-type'),input=gv('exp-input'),level=gv('exp-level'),model=gv('exp-model');
+  if(!input){document.getElementById('exp-out').textContent='⚠️ Enter a short prompt first.';return}
+  const pk=a=>a[Math.floor(Math.random()*a.length)],pkn=(a,n)=>{let s=[...a];for(let i=s.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[s[i],s[j]]=[s[j],s[i]]}return s.slice(0,n)};
+  let out='';
+  if(type==='image'){const n=level==='moderate'?3:level==='high'?5:7;let pts=[input,pk(ES)+' style',pk(EM)+' atmosphere',pk(EL)];if(n>=5){pts.push(pk(EC));pts.push(pk(ED))}if(n>=7)pts.push(pkn(ED,2).join(', '));out=pts.join(', ');if(model==='midjourney')out+=' --ar 16:9 --v 6.1';else if(model==='sd')out+=', masterpiece, best quality\n\nNegative prompt: lowres, bad anatomy, bad hands, text, blurry, watermark';else if(model==='dalle')out='Create an image of '+out+'.'}
+  else if(type==='text'){const adds=pkn(ETA,level==='moderate'?2:level==='high'?4:5);out=input+'\n\nAdditional instructions:\n'+adds.map(a=>'- '+a).join('\n');if(level!=='moderate')out+='\n\nFormat with clear structure. Be thorough but concise.';if(level==='max')out+='\nThink step by step before your final answer.'}
+  else{const adds=pkn(ECA,level==='moderate'?2:level==='high'?4:6);out=input+'\n\nRequirements:\n'+adds.map(a=>'- '+a).join('\n');if(level!=='moderate')out+='\n\nProvide clean, production-ready code.';if(level==='max')out+='\nInclude tests and documentation.'}
+  document.getElementById('exp-out').textContent=out;
+}
+
+// ═══ JSON FORMATTER ═══
+function buildJSON(){
+  const api=getChip('json-api'),sys=gv('json-system'),user=gv('json-user'),model=gv('json-model'),tokens=parseInt(gv('json-tokens'))||1024,temp=parseFloat(gv('json-temp'))||0.7;
+  const stream=document.querySelector('#json-opts .chip[data-v="stream"]')?.classList.contains('on');
+  const topp=document.querySelector('#json-opts .chip[data-v="topp"]')?.classList.contains('on');
+  if(!user){document.getElementById('json-out').textContent='⚠️ Enter a user message.';return}
+  let obj={};
+  if(api==='openai'){obj={model,messages:[],max_tokens:tokens,temperature:temp};if(sys)obj.messages.push({role:"system",content:sys});obj.messages.push({role:"user",content:user});if(stream)obj.stream=true;if(topp)obj.top_p=0.9}
+  else if(api==='anthropic'){obj={model:model.includes('claude')?model:'claude-sonnet-4-5-20250929',max_tokens:tokens,messages:[{role:"user",content:user}]};if(sys)obj.system=sys;if(temp!==0.7)obj.temperature=temp;if(stream)obj.stream=true;if(topp)obj.top_p=0.9}
+  else{obj={contents:[{role:"user",parts:[{text:user}]}],generationConfig:{temperature:temp,maxOutputTokens:tokens}};if(sys)obj.systemInstruction={parts:[{text:sys}]};if(topp)obj.generationConfig.topP=0.9}
+  document.getElementById('json-out').textContent=JSON.stringify(obj,null,2);
+}
+document.querySelectorAll('#json-api .chip').forEach(c=>{c.addEventListener('click',()=>{setTimeout(()=>{const api=getChip('json-api');const sel=document.getElementById('json-model');sel.innerHTML='';if(api==='openai'){['gpt-4o','gpt-4o-mini','gpt-4.1','o3-mini'].forEach(m=>{sel.innerHTML+=`<option value="${m}">${m}</option>`})}else if(api==='anthropic'){['claude-sonnet-4-5-20250929','claude-haiku-4-5-20251001','claude-opus-4-6'].forEach(m=>{sel.innerHTML+=`<option value="${m}">${m.replace(/-\d{8}$/,'')}</option>`})}else{['gemini-2.0-flash','gemini-2.5-pro','gemini-2.5-flash'].forEach(m=>{sel.innerHTML+=`<option value="${m}">${m}</option>`})}},50)})});
+
+// ═══ TEMPLATES ═══
+const T=[
+{cat:"Writing",name:"Blog Post Outline",desc:"Structured blog with SEO",prompt:"You are an expert content strategist. Create a detailed blog post outline about [TOPIC].\n\nTarget audience: [AUDIENCE]\nTone: [TONE]\nWord count: [LENGTH]\n\nInclude:\n- 3 title options\n- Hook/intro angle\n- 5-7 sections with sub-points\n- Key takeaways\n- CTA\n- Keywords",vars:{TOPIC:"AI in healthcare",AUDIENCE:"business professionals",TONE:"authoritative",LENGTH:"2000 words"}},
+{cat:"Writing",name:"Email Sequence",desc:"Multi-email nurture campaign",prompt:"Write a [NUM]-email nurture sequence for [PRODUCT].\n\nAudience: [AUDIENCE]\nGoal: [GOAL]\n\nPer email:\n- Subject line (+ A/B variant)\n- Preview text\n- Body copy\n- CTA\n- Timing (days from signup)",vars:{NUM:"5",PRODUCT:"online coding bootcamp",AUDIENCE:"career changers 25-40",GOAL:"convert trial to paid"}},
+{cat:"Writing",name:"Social Media Posts",desc:"Platform-specific content batch",prompt:"Create [NUM] social media posts about [TOPIC] for [PLATFORM].\n\nVoice: [VOICE]\nGoal: [GOAL]\n\nPer post: text, hashtags, engagement hook.\nVary: question, tip, story, stat, hot take.",vars:{NUM:"7",TOPIC:"productivity tips",PLATFORM:"LinkedIn",VOICE:"thought leader",GOAL:"engagement"}},
+{cat:"Writing",name:"Product Description",desc:"Convert features to benefits",prompt:"Write a product description for [PRODUCT].\n\nFeatures:\n- [F1]\n- [F2]\n- [F3]\n\nBuyer: [BUYER]\nTone: [TONE]\n\nProvide: headline, short desc (50w), long desc (200w), 5 bullets, SEO meta.",vars:{PRODUCT:"wireless headphones",F1:"40hr battery",F2:"Active noise cancellation",F3:"Spatial audio",BUYER:"remote workers",TONE:"premium"}},
+{cat:"Code",name:"Code Review",desc:"Thorough code analysis",prompt:"You are a senior engineer. Review this code:\n\n```[LANG]\n[CODE]\n```\n\nAnalyze:\n1. Bugs/errors\n2. Performance\n3. Security\n4. Readability\n5. Edge cases\n\nLine-by-line feedback + improved code. Rate 1-10.",vars:{LANG:"javascript",CODE:"// paste code here"}},
+{cat:"Code",name:"Architecture Design",desc:"System design for a project",prompt:"Design system architecture for: [PROJECT]\n\nRequirements:\n- [R1]\n- [R2]\n- [R3]\n\nProvide:\n1. High-level architecture\n2. Tech stack + rationale\n3. Database schema\n4. API endpoints\n5. Scalability plan\n6. Bottlenecks",vars:{PROJECT:"real-time chat app",R1:"10k concurrent users",R2:"Message history + search",R3:"File sharing"}},
+{cat:"Code",name:"Debug Helper",desc:"Systematic debugging",prompt:"Bug in my [LANG] code.\n\nExpected: [EXPECTED]\nActual: [ACTUAL]\nError: [ERROR]\n\n```\n[CODE]\n```\n\n1. Root cause\n2. Why it happens\n3. Fix\n4. Prevention tips",vars:{LANG:"Python",EXPECTED:"Returns sorted list",ACTUAL:"Throws TypeError",ERROR:"paste error",CODE:"paste code"}},
+{cat:"Business",name:"Market Analysis",desc:"Industry research",prompt:"Market analysis for [INDUSTRY].\n\n1. Market size & growth\n2. Key players & share\n3. Customer segments\n4. 2-3 year trends\n5. Entry barriers\n6. SWOT for new entrant\n7. Positioning strategy\n\nBe specific. Flag assumptions.",vars:{INDUSTRY:"AI tutoring platforms"}},
+{cat:"Business",name:"Pitch Deck Script",desc:"Investor pitch narrative",prompt:"Write a [DURATION] pitch script for [COMPANY].\n\nProblem: [PROBLEM]\nSolution: [SOLUTION]\nModel: [MODEL]\n\n1. Hook (30s)\n2. Problem (1m)\n3. Solution demo (2m)\n4. Market\n5. Traction\n6. Model\n7. Team\n8. Ask\n\nConversational, not corporate.",vars:{DURATION:"8 minute",COMPANY:"PromptKit",PROBLEM:"People write bad AI prompts",SOLUTION:"All-in-one prompt toolkit",MODEL:"Freemium + ads"}},
+{cat:"Education",name:"Lesson Plan",desc:"Structured teaching plan",prompt:"Lesson plan: teaching [TOPIC] to [AUDIENCE].\nDuration: [DURATION]\n\n1. Objectives (3-5)\n2. Warm-up (5m)\n3. Core instruction + examples\n4. Practice exercise\n5. Assessment\n6. Materials needed\n\nDifferentiate for advanced/struggling.",vars:{TOPIC:"recursion",AUDIENCE:"high school students",DURATION:"60 minutes"}},
+{cat:"Education",name:"ELI5 Explainer",desc:"Simplify any concept",prompt:"Explain [TOPIC] simply.\n\nRules:\n- Analogies a [AGE]-year-old gets\n- Zero jargon\n- Daily-life examples\n- Under [LENGTH] words\n- One-sentence summary\n\nThen give intermediate-level follow-up.",vars:{TOPIC:"blockchain",AGE:"10",LENGTH:"200"}},
+{cat:"Creative",name:"Story Premises",desc:"Unique story ideas",prompt:"Generate [NUM] story premises in [GENRE].\n\nEach:\n- Logline (1-2 sentences)\n- Main character\n- Central conflict\n- Setting\n- Unique twist\n- Opening scene\n\nAvoid clichés. Focus on emotional hooks.",vars:{NUM:"5",GENRE:"science fiction"}},
+{cat:"Data",name:"SQL Query Builder",desc:"SQL from plain English",prompt:"Convert to SQL:\n\"[REQUEST]\"\n\nTables: [TABLES]\nDatabase: [DB]\n\n1. SQL query\n2. Explanation\n3. Performance notes\n4. Alternatives",vars:{REQUEST:"Top 10 customers by spend in last 90 days",TABLES:"customers, orders, order_items",DB:"PostgreSQL"}},
+{cat:"Data",name:"Data Analysis Plan",desc:"Structure a data project",prompt:"Analysis plan for: [QUESTION]\n\n1. Key questions\n2. Data requirements\n3. Methods\n4. Visualizations\n5. Statistical tests\n6. Biases\n7. Tools (Python/SQL)\n8. Timeline",vars:{QUESTION:"Analyzing churn for SaaS with 50k users"}},
+];
+let tmplCat='All',curTmpl=null;
+function initTemplates(){const cats=['All',...new Set(T.map(t=>t.cat))];document.getElementById('tmpl-cats').innerHTML=cats.map(c=>`<div class="chip ${c==='All'?'on':''}" onclick="filterCat('${c}')">${c}</div>`).join('');renderTemplates()}
+function filterCat(c){tmplCat=c;document.querySelectorAll('#tmpl-cats .chip').forEach(el=>el.classList.toggle('on',el.textContent===c));renderTemplates()}
+function renderTemplates(){const q=gv('tmpl-search').toLowerCase();const f=T.filter(t=>(tmplCat==='All'||t.cat===tmplCat)&&(!q||t.name.toLowerCase().includes(q)||t.desc.toLowerCase().includes(q)||t.cat.toLowerCase().includes(q)));document.getElementById('tmpl-grid').innerHTML=f.map(t=>{const i=T.indexOf(t);return`<div class="tmpl-card" onclick="selectTmpl(${i})"><h3>${t.name}</h3><p>${t.desc}</p><span class="tmpl-tag">${t.cat}</span></div>`}).join('')||'<p style="color:var(--t4)">No templates found.</p>'}
+function selectTmpl(i){curTmpl=T[i];document.getElementById('tmpl-title').textContent=curTmpl.name;document.getElementById('tmpl-out').textContent=curTmpl.prompt;const v=document.getElementById('tmpl-vars');v.innerHTML=curTmpl.vars?Object.entries(curTmpl.vars).map(([k,val])=>`<div class="field" style="margin-bottom:8px"><label>${k}</label><input type="text" class="tvar" data-key="${k}" value="${val}"></div>`).join(''):'';document.getElementById('tmpl-preview').classList.add('show');document.getElementById('tmpl-preview').scrollIntoView({behavior:'smooth'})}
+function applyVars(){if(!curTmpl)return;let p=curTmpl.prompt;document.querySelectorAll('.tvar').forEach(inp=>{p=p.replaceAll(`[${inp.dataset.key}]`,inp.value)});document.getElementById('tmpl-out').textContent=p}
+
+// ═══ SCORER ═══
+function scorePrompt(){
+  const input=gv('score-input');if(!input){document.getElementById('score-results').innerHTML='';return}
+  const w=input.split(/\s+/).length;
+  const has={role:/you are|act as|role:|persona:/i.test(input),ctx:/context:|background:|given that/i.test(input),fmt:/format:|respond in|output as|bullet|json|table|markdown|step.by.step/i.test(input),ex:/example:|for instance|e\.g\.|like this:/i.test(input),con:/don'?t|avoid|never|do not|constraints?:/i.test(input),spec:/\d+|specific|exactly|must include/i.test(input),aud:/audience|reader|user|beginner|expert/i.test(input),br:/\n/.test(input),list:/[-•*]\s|\d+\.\s/.test(input)};
+  let cl=0,sp=0,st=0;
+  cl+=Math.min(30,w>=10?30:w*3);cl+=has.br?20:5;cl+=w<500?15:5;cl+=(input.split(/[.!?]+/).filter(s=>s.trim()).length>=2)?20:10;cl+=15;
+  sp+=has.spec?25:0;sp+=has.ex?20:0;sp+=has.aud?15:0;sp+=w>=20?15:5;sp+=has.ctx?15:0;sp+=(/\b\d+\b/.test(input))?10:0;
+  st+=has.role?25:0;st+=has.fmt?20:0;st+=has.con?20:0;st+=has.br?15:5;st+=has.list?10:0;st+=has.ctx?10:0;
+  cl=Math.min(100,cl);sp=Math.min(100,sp);st=Math.min(100,st);
+  let ef=Math.round((cl+sp+st)/3);ef+=has.role&&has.fmt&&has.con?10:0;ef+=has.ex?5:0;ef=Math.min(100,ef);
+  const ov=Math.round((cl+sp+st+ef)/4);
+  const gr=ov>=85?'A':ov>=75?'B+':ov>=65?'B':ov>=50?'C':ov>=35?'D':'F';
+  const col=v=>v>=70?'var(--green)':v>=45?'var(--yellow)':'var(--red)';
+  let tips=[];if(!has.role)tips.push('Add a role — tell the AI who to be');if(!has.fmt)tips.push('Specify output format — bullets, table, JSON, etc.');if(!has.con)tips.push('Add constraints — what should the AI avoid?');if(!has.ex)tips.push('Include examples of good output');if(!has.aud)tips.push('Define the target audience');if(w<15)tips.push('Too short — add more detail');if(!has.br)tips.push('Use line breaks to structure sections');
+  const bar=(l,v)=>`<div class="score-card"><h4>${l}</h4><div class="val" style="color:${col(v)}">${v}/100</div><div class="score-bar"><div class="score-fill" style="width:${v}%;background:${col(v)}"></div></div></div>`;
+  document.getElementById('score-results').innerHTML=`<div style="text-align:center;padding:20px;background:var(--bg2);border:1px solid var(--bdr2);border-radius:12px;margin-bottom:16px"><div style="font-size:11px;color:var(--t4);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Overall Score</div><div style="font-family:var(--mono);font-size:52px;font-weight:700;color:${col(ov)}">${ov}</div><div style="font-family:var(--mono);font-size:18px;font-weight:600;color:${col(ov)}">Grade: ${gr}</div><div class="score-bar" style="max-width:300px;margin:12px auto 0"><div class="score-fill" style="width:${ov}%;background:${col(ov)}"></div></div></div><div class="score-grid">${bar('Clarity',cl)}${bar('Specificity',sp)}${bar('Structure',st)}${bar('Effectiveness',ef)}</div><div style="margin-top:16px;font-size:12px;color:var(--t3)"><strong>Stats:</strong> ${w} words · ${input.split(/[.!?]+/).filter(s=>s.trim()).length} sentences · ${input.split('\n').filter(s=>s.trim()).length} lines</div>${tips.length?`<div class="fst" style="margin-top:20px">Suggestions</div><ul class="tips-list">${tips.map(t=>`<li>${t}</li>`).join('')}</ul>`:'<p style="margin-top:16px;color:var(--green);font-weight:600">✓ Your prompt looks solid!</p>'}`;
+}
+
+// ═══ TOKEN COUNTER ═══
+function countTokens(){
+  const input=document.getElementById('tok-input').value;const ch=input.length;const w=input.trim()?input.trim().split(/\s+/).length:0;
+  const gt=Math.ceil(ch/4),ct=Math.ceil(ch/3.5);
+  document.getElementById('tok-chars').textContent=ch.toLocaleString();document.getElementById('tok-words').textContent=w.toLocaleString();
+  document.getElementById('tok-gpt').textContent=gt.toLocaleString();document.getElementById('tok-claude').textContent=ct.toLocaleString();
+  const W=[{n:'GPT-4o',c:128000,t:gt},{n:'GPT-4o-mini',c:128000,t:gt},{n:'Claude Sonnet 4.5',c:200000,t:ct},{n:'Claude Haiku 4.5',c:200000,t:ct},{n:'Gemini 2.0 Flash',c:1048576,t:gt}];
+  document.getElementById('tok-windows').innerHTML=W.map(w=>{const p=Math.min(100,(w.t/w.c*100));const c=p>90?'var(--red)':p>50?'var(--yellow)':'var(--green)';return`<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;font-size:12px"><span style="width:130px;font-weight:500;font-family:var(--mono);font-size:11px">${w.n}</span><div style="flex:1;height:6px;background:var(--bg4);border-radius:99px;overflow:hidden"><div style="width:${p}%;height:100%;background:${c};border-radius:99px"></div></div><span style="width:100px;text-align:right;color:var(--t3);font-family:var(--mono);font-size:11px">${w.t.toLocaleString()}/${(w.c/1000).toFixed(0)}k</span></div>`}).join('');
+}
+
+// INIT
+countTokens();initTemplates();
+</script>
+</body>
+</html>
